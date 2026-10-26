@@ -12,12 +12,14 @@ Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/
   <a href="https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.ipk"><img src="assets/webos.png" alt="Hent til LG webOS (IPK)" width="240"></a>
 </p>
 
+<p align="center">Google TV og Android TV: skriv koden <b>2268953</b> i Downloader-appen, eller åbn <a href="https://aftv.news/2268953">aftv.news/2268953</a> i en browser.</p>
+
 ## Google TV og Android TV (fx Chromecast med Google TV)
 
 1. Installér **Downloader** (fra AFTVnews) fra Google Play.
 2. Giv Downloader lov til at installere apps: Indstillinger › Apps › Sikkerhed og begrænsninger › Ukendte kilder › Downloader.
-3. Åbn Downloader og skriv koden **2268953** (eller hele adressen:
-   `https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk`).
+3. Åbn Downloader og skriv koden **2268953**. Kortlinket [aftv.news/2268953](https://aftv.news/2268953) eller hele adressen
+   `https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk` giver det samme.
 4. Installér, og åbn **Bolli DR** under Dine apps.
 
 En ny version installeres samme vej, oven i den gamle; login og indstillinger bliver.
