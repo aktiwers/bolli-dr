@@ -6,6 +6,12 @@ Bolli DR er ikke en officiel DR-app. Programmer, billeder, navne og logoer er DR
 
 Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/bolli-dr/releases).
 
+<p align="center">
+  <a href="https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk"><img src="assets/android.png" alt="Hent til Android og Google TV (APK)" width="240"></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.ipk"><img src="assets/webos.png" alt="Hent til LG webOS (IPK)" width="240"></a>
+</p>
+
 ## Google TV og Android TV (fx Chromecast med Google TV)
 
 1. Installér **Downloader** (fra AFTVnews) fra Google Play.
