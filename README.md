@@ -16,11 +16,8 @@ Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/
 
 1. Installér **Downloader** (fra AFTVnews) fra Google Play.
 2. Giv Downloader lov til at installere apps: Indstillinger › Apps › Sikkerhed og begrænsninger › Ukendte kilder › Downloader.
-3. Åbn Downloader og skriv adressen (eller Downloader-koden, når den er lavet):
-
-   ```
-   https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk
-   ```
+3. Åbn Downloader og skriv koden **2268953** (eller hele adressen:
+   `https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk`).
 
 4. Installér, og åbn **Bolli DR** under Dine apps.
 
