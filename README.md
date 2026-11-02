@@ -16,6 +16,8 @@ Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/
 
 <p align="center">Google TV og Android TV: skriv koden <b>2268953</b> i Downloader-appen, eller åbn <a href="https://aftv.news/2268953">aftv.news/2268953</a> i en browser.</p>
 
+<p align="center">LG webOS: tilføj Homebrew-repositoryet <code>https://aktiwers.github.io/bolli-homebrew/apps.json</code> i Homebrew Channel (<a href="#lg-webos">se nedenfor</a>).</p>
+
 ## Google TV og Android TV (fx Chromecast med Google TV)
 
 1. Installér **Downloader** (fra AFTVnews) fra Google Play.
