@@ -72,10 +72,6 @@ Så ligger appen i `apps/bolli-dr`.
   cd android && ./gradlew assembleDebug
   ```
 
-## Tak
-
-- Skrifttype: Inter (SIL Open Font License). QR-koder: [QR Code Generator](https://github.com/kazuhikoarase/qrcode-generator) af Kazuhiko Arase (MIT).
-
 ## Licens
 
 GPL-3.0, se [LICENSE](LICENSE).
