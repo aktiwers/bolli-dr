@@ -26,10 +26,6 @@ Bolli DR er ikke en officiel DR-app. Programmer, billeder, navne og logoer er DR
 
 En ny version installeres samme vej, oven i den gamle; login og indstillinger bliver.
 
-Jævnest billede: sæt Google TV til **1080p 50 Hz** (Indstillinger › Skærm og lyd › Opløsning). DR sender med 50 billeder i sekundet.
-
-Fjernbetjeningen: pilene, OK og Tilbage. Hold OK nede for mere (beskrivelse, Min liste, Se videre). Søg har en mikrofon-knap. Indstillinger › Fjernbetjening viser alle knapperne.
-
 ## LG webOS
 
 Til LG-tv med webOS Homebrew Channel (rootet eller i udviklertilstand).
