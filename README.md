@@ -36,7 +36,7 @@ Fjernbetjeningen: pilene, OK og Tilbage. Hold OK nede for mere (beskrivelse, Min
 
 Til LG-tv med webOS Homebrew Channel (rootet eller i udviklertilstand).
 
-Nemmest er at tilføje mit Homebrew-repository. Så ligger Bolli DR og Bolli YouTube i Homebrew Channels liste, og nye versioner kommer der som opdateringer:
+Nemmest er at tilføje mit Homebrew-repository. Så ligger Bolli DR i Homebrew Channels liste, og nye versioner kommer der som opdateringer:
 
 1. Åbn Homebrew Channel, og gå til Settings (tandhjulet).
 2. Vælg **Add repository**, og skriv:
