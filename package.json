@@ -1,0 +1,14 @@
+{
+  "name": "bolli-dr",
+  "version": "0.9.81",
+  "private": true,
+  "description": "A fast DR app for LG webOS TVs, Android TV and Google TV",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "build": "tsc -p . && rollup build/tsc/src/dr/main.js --format iife --file apps/bolli-dr/app.js --silent && node -e \"var fs=require('fs'),f='apps/bolli-dr/app.js',v=require('./apps/bolli-dr/appinfo.json').version;fs.writeFileSync(f,fs.readFileSync(f,'utf8').split('__BOLLI_VERSION__').join(v))\""
+  },
+  "devDependencies": {
+    "rollup": "4.24.0",
+    "typescript": "5.6.3"
+  }
+}

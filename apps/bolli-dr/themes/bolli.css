@@ -1,0 +1,412 @@
+/* Theme "Bolli", Bolli DR's look, after Apple's tvOS Human Interface
+   Guidelines, adapted to TV browsers (Chrome 38, weak CPU):
+   - sizes in 1280x720 layout units = 2/3 of tvOS points at 1080p; every size
+     the code computes with (tiles, rows, banner) is in
+     src/dr/ui/themes/default.ts and set inline, not here
+   - only transform and opacity animate (composited, no repaint)
+   - no blur: the focus shadow is a pre-rendered image; the focus ring is a
+     spread-only box-shadow on one tile
+   - Inter instead of SF Pro (SF may not be used outside Apple platforms) */
+
+@font-face { font-family: 'Inter'; font-weight: 400; src: url(fonts/Inter-Regular.woff) format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 600; src: url(fonts/Inter-SemiBold.woff) format('woff'); }
+@font-face { font-family: 'Inter'; font-weight: 700; src: url(fonts/Inter-Bold.woff) format('woff'); }
+
+html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #000; color: #fff;
+             font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; cursor: none; }
+
+/* ---- shell: tab bar over full-screen content */
+#app, .bd-stage, .bd-page, .bd-grid, .bd-detail { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+.bd-stage, .bd-page, .bd-grid, .bd-detail { overflow: hidden; }
+/* Pushed screens cover what is under them */
+.bd-grid, .bd-detail { background: #000; }
+/* Images fade in once loaded (src/core/dom.ts fadeInImages) */
+.bd-fade { opacity: 0; -webkit-transition: opacity .25s ease; }
+.bd-fade--in { opacity: 1; }
+.bd-menu { position: absolute; left: 0; top: 0; width: 1280px; height: 64px; z-index: 10;
+           -webkit-transition: -webkit-transform .25s ease, opacity .25s ease; }
+.bd-menu--hidden { -webkit-transform: translate3d(0, -72px, 0); opacity: 0; }
+.bd-menu-logo { position: absolute; left: 56px; top: 12px; width: 40px; height: 40px; border-radius: 9px;
+                 -webkit-transition: -webkit-transform .2s ease; }
+.bd-menu-logo--focused { -webkit-transform: scale(1.15); box-shadow: 0 0 0 3px #fff; }
+/* The logo's list: profile (or "Log ind") and settings */
+.bd-menu-drop { position: absolute; left: 50px; top: 64px; min-width: 260px; padding: 8px; border-radius: 16px;
+                background: rgba(44, 44, 46, .97); opacity: 0; -webkit-transform: translate3d(0, -6px, 0);
+                -webkit-transition: opacity .15s ease, -webkit-transform .15s ease; }
+.bd-menu-drop--open { opacity: 1; -webkit-transform: translate3d(0, 0, 0); }
+.bd-menu-drop-item { height: 44px; line-height: 44px; padding: 0 18px; border-radius: 11px; font-size: 19px; font-weight: 600;
+                     color: rgba(255, 255, 255, .85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 360px; }
+.bd-menu-drop-item--focused { color: #000; background: #fff; }
+.bd-menu-items { position: absolute; left: 0; right: 0; top: 14px; text-align: center; white-space: nowrap; }
+.bd-menu-item { display: inline-block; margin: 0 3px; padding: 0 20px; height: 36px; line-height: 36px; border-radius: 18px;
+                font-size: 19px; font-weight: 600; color: rgba(255, 255, 255, .6);
+                -webkit-transition: -webkit-transform .2s ease; }
+.bd-menu-clock { position: absolute; right: 56px; top: 21px; font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .6); }
+.bd-status { position: absolute; left: 56px; top: 96px; font-size: 19px; color: rgba(255, 255, 255, .6); }
+.bd-status-hint { margin-top: 10px; font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, .45); }
+/* No internet: over the app (not the players), goes by itself */
+/* (with bd-screen) */
+.bd-offline { z-index: 30; }
+.bd-offline-box { position: absolute; left: 290px; top: 270px; width: 700px; text-align: center; }
+.bd-message { position: absolute; left: 56px; top: 120px; width: 820px; font-size: 25px; line-height: 36px; color: rgba(255, 255, 255, .8); }
+/* The toast: frosted glass as the tab bar's (Chrome 38 cannot blur what is behind it, so a see-through
+   dark tint (65%: text stays readable over busy pictures) with a light sheen, a bright top edge and a soft
+   shadow; the text shadowed for bright pictures) */
+#toast { display: none; position: absolute; z-index: 50; left: 50%; bottom: 48px; width: 720px; margin-left: -360px; padding: 16px 28px;
+         background-color: rgba(40, 40, 46, .65); background-image: linear-gradient(rgba(255, 255, 255, .15), rgba(255, 255, 255, .04));
+         box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px rgba(255, 255, 255, .1), 0 8px 16px rgba(0, 0, 0, .3);
+         color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); font-size: 19px; font-weight: 600; border-radius: 16px; text-align: center; }
+
+/* ---- pages with rows */
+.bd-page-title { position: absolute; left: 56px; top: 24px; font-size: 32px; font-weight: 700; }
+.bd-page-content { position: absolute; left: 0; top: 0; width: 1280px; -webkit-transition: -webkit-transform .3s ease; }
+/* Rows scrolled up fade out above the focused row (only once the page has
+   scrolled); as tall as scrollTop in default.ts, solid at the very top */
+.bd-page-fade { position: absolute; left: 0; top: 0; width: 1280px; height: 40px; opacity: 0;
+                background: linear-gradient(to bottom, #000 0, #000 60%, rgba(0,0,0,0) 100%);
+                -webkit-transition: opacity .3s ease; }
+.bd-page-fade--on { opacity: 1; }
+
+/* Top shelf: full-bleed image behind the tab bar, fading into the rows. Two
+   image layers: the new image fades in on top, the old one stays under it */
+/* z-index 0: the layers stack inside the banner, so the rows below paint over it */
+.bd-hero { position: relative; z-index: 0; width: 1280px; }
+.bd-hero-img { position: absolute; left: 0; top: 0; opacity: 0; -webkit-transform: translateZ(0); }
+.bd-hero-img--front { opacity: 1; z-index: 1; -webkit-transition: opacity .5s ease; }
+.bd-hero-img--back { opacity: 1; }
+.bd-hero:after { content: ''; position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 2; -webkit-transform: translateZ(0);
+                 background: linear-gradient(to bottom, rgba(0,0,0,.55) 0, rgba(0,0,0,0) 110px, rgba(0,0,0,0) 270px, #000 560px),
+                             linear-gradient(to right, rgba(0,0,0,.7) 0, rgba(0,0,0,0) 62%); }
+/* Anchored at the bottom, so long texts grow upwards and never into the rows */
+.bd-hero-info { position: absolute; left: 56px; bottom: 44px; width: 600px; z-index: 3; }
+.bd-hero-info .bd-button { margin-top: 22px; }
+.bd-hero-title { font-size: 46px; font-weight: 700; line-height: 52px; max-height: 104px; overflow: hidden; }
+.bd-hero-sub { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .6); margin-top: 10px; }
+.bd-hero-text { font-size: 19px; line-height: 27px; color: rgba(255, 255, 255, .8); margin-top: 12px; max-height: 81px; overflow: hidden; }
+/* Page indicator, centred under the banner */
+.bd-hero-dots { position: absolute; left: 0; bottom: 16px; width: 1280px; height: 8px; z-index: 3; text-align: center; font-size: 0; }
+.bd-hero-dot { display: inline-block; width: 7px; height: 7px; margin: 0 4px; border-radius: 4px; background: rgba(255, 255, 255, .3); }
+.bd-hero-dot--current { background: rgba(255, 255, 255, .75); }
+.bd-hero--active .bd-hero-dot--current { background: #fff; }
+
+.bd-row { position: relative; width: 1280px; overflow: hidden; }
+/* Text in the upper part: a lifted poster grows 12 px into the heading */
+.bd-row-title { line-height: 28px; padding-left: 56px; font-size: 21px; font-weight: 600; color: rgba(255, 255, 255, .75); white-space: nowrap; }
+.bd-row--active .bd-row-title { color: #fff; }
+.bd-row-strip { padding: 0 0 0 56px; white-space: nowrap; -webkit-transition: -webkit-transform .25s ease; }
+
+/* Lockups: lift on focus (scale + pre-rendered shadow); the title brightens and moves down with it */
+.bd-tile { position: relative; display: inline-block; vertical-align: top; white-space: normal; -webkit-transition: opacity .2s ease; }
+/* Scrolled past the left margin */
+.bd-tile--gone { opacity: 0; }
+.bd-tile--focused { z-index: 2; }
+.bd-tile-under { position: absolute; left: 0; top: 0; -webkit-transition: -webkit-transform .2s ease; }
+.bd-tile-under:before { content: ''; position: absolute; left: -34px; right: -34px; top: -18px; bottom: -44px;
+                        background: url(shadow.png) center / 100% 100% no-repeat; opacity: 0; -webkit-transition: opacity .2s ease; }
+/* The lift springs a little past its size and settles */
+.bd-tile-frame { position: relative; background: #1c1c1e; border-radius: 10px; overflow: hidden;
+                 -webkit-transition: -webkit-transform .28s cubic-bezier(.3, 1.4, .5, 1); }
+.bd-tile-img { display: block; width: 100%; height: 100%; }
+.bd-tile--focused .bd-tile-frame, .bd-tile--focused .bd-tile-under, .bd-tile--focused .bd-shelf-frame { -webkit-transform: scale(1.1); }
+.bd-tile--focused .bd-tile-under:before { opacity: 1; }
+/* A thin white ring makes the focused tile easy to find in a busy row */
+.bd-tile--focused .bd-tile-frame, .bd-tile--focused .bd-shelf-frame { box-shadow: 0 0 0 3px rgba(255, 255, 255, .9); }
+.bd-tile-title { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                 opacity: .6; -webkit-transition: opacity .2s ease, -webkit-transform .2s ease; }
+.bd-tile--focused .bd-tile-title { opacity: 1; -webkit-transform: translate3d(0, 8px, 0); }
+.bd-tile-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 24px 14px 10px; font-size: 17px; font-weight: 600;
+                 background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.7)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* "Se videre": a progress bar along the bottom of the image */
+.bd-tile-progress { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 4px; border-radius: 2px;
+                    background: rgba(255, 255, 255, .35); overflow: hidden; }
+.bd-tile-progress-fill { height: 4px; background: #fff; }
+/* "Se alle" at the end of a row */
+.bd-tile-more { position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex; flex-direction: column;
+                justify-content: center; align-items: center; background: rgba(0, 0, 0, .6); text-align: center; }
+.bd-tile-more-title { font-size: 21px; font-weight: 700; }
+.bd-tile-more-count { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .7); margin-top: 4px; }
+.bd-tile-text { display: inline-block; padding: 0 22px; height: 44px; line-height: 44px; border-radius: 22px; font-size: 17px; font-weight: 600;
+                color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .12); white-space: nowrap; -webkit-transition: -webkit-transform .2s ease; }
+
+/* ---- product page (full screen, tab bar hidden) */
+.bd-detail-backdrop { position: absolute; left: 0; top: 0; width: 1280px; height: 560px; object-fit: cover; }
+.bd-detail-shade { position: absolute; left: 0; top: 0; width: 1280px; height: 720px;
+                   background: linear-gradient(to right, rgba(0,0,0,.82) 0, rgba(0,0,0,.35) 55%, rgba(0,0,0,0) 80%),
+                               linear-gradient(to bottom, rgba(0,0,0,0) 35%, rgba(0,0,0,.92) 72%); }
+/* The text and rows fade in when the page data is there */
+.bd-detail-body { position: absolute; left: 0; top: 0; width: 1280px; height: 1000px; opacity: 0;
+                  -webkit-transition: -webkit-transform .3s ease, opacity .25s ease; }
+.bd-detail-body--in { opacity: 1; }
+.bd-detail-info { position: absolute; left: 56px; top: 92px; width: 640px; }
+.bd-detail-title { font-size: 50px; font-weight: 700; line-height: 56px; max-height: 112px; overflow: hidden; }
+.bd-detail-meta { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .6); margin-top: 12px; }
+.bd-detail-text { font-size: 19px; line-height: 27px; color: rgba(255, 255, 255, .82); margin-top: 14px; max-height: 81px; overflow: hidden; }
+.bd-detail-buttons { margin-top: 28px; }
+.bd-button { display: inline-block; height: 48px; line-height: 48px; padding: 0 30px; margin-right: 14px; border-radius: 12px;
+             font-size: 18px; font-weight: 600; -webkit-transition: -webkit-transform .2s ease; }
+.bd-detail-seasons { position: absolute; left: 56px; top: 412px; white-space: nowrap; }
+.bd-season { display: inline-block; height: 34px; line-height: 34px; padding: 0 18px; margin-right: 8px; border-radius: 17px;
+             font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, .6); -webkit-transition: -webkit-transform .2s ease; }
+.bd-detail-rows { position: absolute; left: 0; top: 456px; width: 1280px; }
+
+/* ---- full-screen pages from the logo's list (profile / login, settings) */
+.bd-screen { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; background: #000; }
+.bd-screen-main { position: absolute; left: 56px; top: 132px; width: 720px; }
+.bd-screen-title { font-size: 40px; font-weight: 700; line-height: 48px; }
+.bd-screen-text { font-size: 21px; line-height: 30px; color: rgba(255, 255, 255, .8); margin-top: 18px; }
+/* Login: the code on the left, the QR code on the right */
+.bd-account-code-box { margin-top: 26px; }
+.bd-account-code { font-size: 68px; font-weight: 700; line-height: 80px; letter-spacing: 6px; }
+.bd-account-countdown { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .55); margin-top: 6px; }
+.bd-account-status { font-size: 19px; line-height: 27px; color: rgba(255, 255, 255, .7); margin-top: 28px; min-height: 27px; }
+.bd-screen-main .bd-button { margin-top: 26px; }
+/* Indstillinger: the settings on the left, the focused one's choices on the right */
+.bd-settings-title { position: absolute; left: 56px; top: 40px; }
+.bd-settings-list { position: absolute; left: 56px; top: 128px; width: 400px; }
+.bd-settings-row { height: 56px; line-height: 56px; padding: 0 20px; margin-bottom: 8px; border-radius: 14px; font-size: 20px; font-weight: 600;
+                   color: rgba(255, 255, 255, .75); -webkit-transition: -webkit-transform .2s ease; }
+.bd-settings-row--focused { background: rgba(255, 255, 255, .14); color: #fff; -webkit-transform: scale(1.03); }
+.bd-settings-row--open { background: rgba(255, 255, 255, .06); color: #fff; }
+.bd-settings-value { float: right; font-size: 17px; color: rgba(255, 255, 255, .55); }
+.bd-settings-pane { position: absolute; left: 520px; top: 128px; width: 704px; }
+.bd-settings-pane-title { font-size: 15px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+.bd-settings-choices { margin-top: 16px; }
+.bd-settings-choice { position: relative; padding: 14px 20px 14px 58px; margin-bottom: 8px; border-radius: 14px; -webkit-transition: -webkit-transform .2s ease; }
+.bd-settings-choice--focused { background: rgba(255, 255, 255, .14); box-shadow: 0 0 0 3px rgba(255, 255, 255, .9); -webkit-transform: scale(1.02); }
+.bd-settings-check { position: absolute; left: 18px; top: 15px; width: 24px; height: 24px; line-height: 24px; border-radius: 12px; text-align: center;
+                     font-size: 15px; font-weight: 700; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .4); }
+.bd-settings-check--on { background: #fff; color: #000; box-shadow: none; }
+.bd-settings-check--open { box-shadow: none; font-size: 26px; }
+.bd-settings-choice-label { font-size: 20px; line-height: 26px; font-weight: 700; }
+.bd-settings-choice-text { margin-top: 4px; font-size: 16px; line-height: 22px; color: rgba(255, 255, 255, .6); }
+.bd-settings-info-title { font-size: 26px; line-height: 32px; font-weight: 700; }
+.bd-settings-info { margin-top: 14px; font-size: 18px; line-height: 27px; color: rgba(255, 255, 255, .8); }
+.bd-account-qr { position: absolute; left: 880px; top: 132px; width: 280px; text-align: center; }
+.bd-account-qr-code { display: block; margin: 0 auto; border-radius: 14px; }
+.bd-account-qr-text { font-size: 16px; font-weight: 600; line-height: 22px; color: rgba(255, 255, 255, .6); margin-top: 16px; }
+
+/* ---- Søg: the typed text, an on-screen keyboard (15 key units per line),
+   then the results as rows; the content scrolls up into the results */
+.bd-search { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; overflow: hidden; }
+.bd-search-content { position: absolute; left: 0; top: 0; width: 1280px; -webkit-transition: -webkit-transform .3s ease; }
+.bd-search-query { margin: 92px 56px 0; height: 48px; line-height: 48px; font-size: 34px; font-weight: 700;
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-search-query--empty { color: rgba(255, 255, 255, .4); }
+.bd-keyboard { margin: 14px 56px 0; }
+.bd-keyboard-line { height: 52px; margin-bottom: 8px; white-space: nowrap; font-size: 0; }
+.bd-key { display: inline-block; width: 70px; height: 52px; line-height: 52px; margin-right: 8px; border-radius: 12px;
+          text-align: center; font-size: 20px; font-weight: 600; color: rgba(255, 255, 255, .85); background: rgba(255, 255, 255, .1);
+          -webkit-transition: -webkit-transform .15s ease; }
+.bd-key--wide2 { width: 148px; }
+/* Line icons (src/dr/ui/icons.ts); each place sets the size */
+.bd-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bd-key-icon { width: 24px; height: 24px; vertical-align: -6px; }
+.bd-key--wide3 { width: 226px; }
+.bd-key--focused { color: #000; background: #fff; -webkit-transform: scale(1.1); }
+.bd-search-status { margin: 18px 56px 0; height: 28px; line-height: 28px; font-size: 19px; color: rgba(255, 255, 255, .6); }
+.bd-search-rows { position: relative; margin-top: 8px; }
+
+/* ---- live channel list */
+.bd-live { position: absolute; left: 0; top: 64px; width: 1280px; height: 656px; }
+.bd-live-list { position: absolute; left: 56px; top: 16px; width: 600px; }
+.bd-live-row { position: relative; height: 118px; margin-bottom: 8px; border-radius: 14px;
+               -webkit-transition: -webkit-transform .2s ease; }
+.bd-live-row--focused { background: rgba(255, 255, 255, .12); -webkit-transform: scale(1.03); }
+.bd-live-logo-box { position: absolute; left: 18px; top: 25px; width: 68px; height: 68px; border-radius: 12px; overflow: hidden; }
+.bd-live-logo { width: 68px; height: 68px; }
+/* The text: 92px with fixed line heights, so 13px stay above and below it in the row (five rows fit) */
+.bd-live-text { position: absolute; left: 106px; right: 20px; top: 13px; }
+.bd-live-name { font-size: 15px; line-height: 18px; font-weight: 600; color: rgba(255, 255, 255, .55); }
+.bd-live-now { font-size: 22px; line-height: 26px; font-weight: 600; color: rgba(255, 255, 255, .85); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-live-row--focused .bd-live-now { color: #fff; }
+.bd-live-time-line { display: block; margin-top: 6px; height: 18px; }
+.bd-live-time { display: inline-block; width: 120px; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .55); vertical-align: middle; }
+.bd-bar { display: inline-block; width: 290px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .2); overflow: hidden; vertical-align: middle; }
+.bd-bar-fill { display: block; height: 4px; width: 0; background: #fff; }
+.bd-live-next { font-size: 15px; line-height: 18px; color: rgba(255, 255, 255, .5); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-live-side { position: absolute; left: 704px; top: 16px; width: 520px; }
+/* The preview: the channel plays under the box (the video is below the app);
+   a ring in the page's black rounds the video's corners like the thumbnail's */
+.bd-live-preview-box { width: 520px; height: 293px; border-radius: 12px; box-shadow: 0 0 0 12px #000; }
+.bd-live-preview { display: block; width: 520px; height: 293px; border-radius: 12px; background: #1c1c1e;
+                   -webkit-transition: opacity .15s ease; }
+/* The picture runs: the thumbnail fades away (and back in, quicker, on the next channel) */
+.bd-live-preview--live { opacity: 0; -webkit-transition-duration: .25s; }
+.bd-live-preview-title { font-size: 28px; font-weight: 700; line-height: 34px; margin-top: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-live-preview-time { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .6); margin-top: 8px; }
+.bd-live-preview-text { font-size: 18px; line-height: 26px; color: rgba(255, 255, 255, .78); max-height: 52px; overflow: hidden;
+                         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* Around the description: focusable as "MERE" when it is cut short (an opaque
+   ground, so the label can cover the line's end) */
+.bd-live-preview-textbox { position: relative; margin: 6px -14px 0; padding: 4px 14px; border-radius: 12px; background: #000;
+                           -webkit-transition: -webkit-transform .2s ease; }
+.bd-live-preview-textbox--focused { background: #26262a; box-shadow: 0 0 0 3px rgba(255, 255, 255, .9); -webkit-transform: scale(1.02); }
+.bd-live-preview-textbox--focused .bd-live-preview-text { color: #fff; }
+.bd-live-more { display: none; position: absolute; right: 14px; bottom: 4px; height: 26px; line-height: 26px; padding-left: 44px;
+                font-size: 14px; font-weight: 700; letter-spacing: .06em; color: #fff; background: linear-gradient(to right, rgba(0, 0, 0, 0), #000 40px); }
+.bd-live-preview-textbox--focused .bd-live-more { background: linear-gradient(to right, rgba(38, 38, 42, 0), #26262a 40px); }
+.bd-live-more--on { display: block; }
+.bd-live-more-dot { display: inline-block; width: 12px; height: 12px; margin-right: 6px; border-radius: 6px; background: #2f7bf0; vertical-align: -1px; }
+/* The panel over the screen with a programme's whole text (main.ts, ui/panel.ts) */
+.bd-panel { display: none; position: absolute; left: 0; top: 0; width: 1280px; height: 720px; z-index: 20; background: rgba(0, 0, 0, .74); }
+.bd-panel-box { position: absolute; left: 260px; top: 104px; width: 760px; box-sizing: border-box; padding: 40px 48px 36px; border-radius: 20px; background: #1c1c1e; }
+.bd-panel-head { height: 36px; line-height: 36px; font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, .6); }
+.bd-panel-logo { float: left; width: 36px; height: 36px; margin-right: 12px; border-radius: 8px; }
+.bd-panel-title { margin-top: 14px; font-size: 34px; line-height: 40px; font-weight: 700; }
+.bd-panel-text { margin-top: 14px; max-height: 270px; overflow: hidden; font-size: 20px; line-height: 30px; color: rgba(255, 255, 255, .86); }
+.bd-panel-buttons { margin-top: 26px; height: 50px; }
+.bd-panel-buttons .bd-button { display: inline-block; margin-right: 14px; }
+.bd-panel-hint { float: right; line-height: 50px; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .5); }
+/* GUIDE: the remote and its keys, over everything (a playing picture shows
+   dimmed under it). The remote is drawn with fixed positions, as in the
+   design; keys that do something have a white ring. */
+.bd-keys { display: none; z-index: 40; background: rgba(11, 11, 13, .95); }
+.bd-keys-remote { position: absolute; left: 96px; top: 8px; width: 248px; height: 704px; background: #1d1e22;
+                  border-radius: 124px 124px 90px 90px / 64px 64px 90px 90px; }
+/* Google TV's remote: slimmer, its wheel on top */
+.bd-keys-remote--gtv { left: 130px; top: 64px; width: 180px; height: 592px; border-radius: 90px / 72px; }
+.bd-keys-remote--gtv .bd-keys-wheel { left: 18px; top: 34px; }
+.bd-keys-row { position: absolute; left: 24px; width: 200px; height: 32px; border-radius: 16px; background: #17181b; }
+.bd-keys-key { position: absolute; box-sizing: border-box; background: #2b2d33; color: rgba(255, 255, 255, .35); font-size: 15px; font-weight: 700; text-align: center; }
+.bd-keys-key--used { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); color: #fff; }
+.bd-keys-key--word { font-size: 11px; letter-spacing: .02em; }
+.bd-keys-key--small { font-size: 8px; letter-spacing: .03em; }
+/* Several parts one under the other: rockers, two-word keys */
+.bd-keys-key--stack { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: center;
+                      justify-content: center; line-height: 1.15 !important; }
+.bd-keys-key--stack span { display: block; }
+.bd-keys-key svg { width: 15px; height: 15px; vertical-align: middle; }
+.bd-keys-key--stack svg { margin: 5px 0; }
+.bd-keys-power { background: #b7322d; color: rgba(255, 255, 255, .85); }
+.bd-keys-label { position: absolute; font-size: 8px; line-height: 10px; font-weight: 700; letter-spacing: .04em; text-align: center; color: rgba(255, 255, 255, .3); }
+.bd-keys-wheel { position: absolute; left: 52px; top: 380px; width: 144px; height: 144px; border-radius: 72px; background: #2b2d33; }
+.bd-keys-ok { position: absolute; left: 45px; top: 45px; width: 54px; height: 54px; border-radius: 27px; background: #3a3c44; line-height: 54px; text-align: center; font-size: 15px; font-weight: 700; }
+.bd-keys-arrow { position: absolute; width: 0; height: 0; border: 6px solid transparent; }
+.bd-keys-arrow--up { left: 66px; top: 8px; border-bottom: 9px solid #fff; }
+.bd-keys-arrow--down { left: 66px; top: 121px; border-top: 9px solid #fff; }
+.bd-keys-arrow--left { left: 8px; top: 66px; border-right: 9px solid #fff; }
+.bd-keys-arrow--right { left: 121px; top: 66px; border-left: 9px solid #fff; }
+.bd-keys-pill { position: absolute; top: 620px; width: 42px; height: 18px; border-radius: 9px; opacity: .35; }
+.bd-keys-pill.bd-keys-key--used { opacity: 1; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
+/* Colours as on the remote (green is teal) */
+.bd-keys-colour--red { background: #e2453b; }
+.bd-keys-colour--green { background: #2fb3a2; }
+.bd-keys-colour--yellow { background: #e6bb2e; }
+.bd-keys-colour--blue { background: #3b88de; }
+.bd-keys-text { position: absolute; left: 420px; top: 56px; width: 780px; }
+.bd-keys-head { margin-bottom: 12px; font-size: 15px; line-height: 18px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+.bd-keys-line { margin-bottom: 10px; font-size: 18px; line-height: 24px; color: rgba(255, 255, 255, .86); }
+.bd-keys-line--half { display: inline-block; vertical-align: top; width: 390px; padding-right: 18px; box-sizing: border-box; }
+.bd-keys-line--off { opacity: .4; }
+.bd-keys-name { display: inline-block; width: 190px; margin-right: 12px; font-weight: 700; color: #fff; }
+.bd-keys-dot { display: inline-block; width: 38px; height: 20px; margin-right: 14px; border-radius: 10px; vertical-align: -4px; }
+.bd-keys-line--half .bd-keys-name { width: 56px; }
+.bd-keys-rule { height: 1px; margin: 12px 0 22px; background: rgba(255, 255, 255, .12); }
+.bd-keys-hint { position: absolute; right: 80px; bottom: 40px; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .5); }
+/* Shelf under the description: the programme before (on demand) and the ones
+   coming, three 16:9 tiles filling the column; its bottom lines up with the
+   channel list's. Focus as on every tile: lift and a thin white ring. The
+   shelf clips 12px out from the column (room for the lift), so tiles do not
+   slide over the channel list. */
+.bd-live-shelf { position: absolute; left: -12px; top: 456px; width: 544px; height: 178px; overflow: hidden; }
+.bd-live-shelf-head { position: absolute; left: 12px; top: 0; font-size: 15px; line-height: 18px; font-weight: 600; color: rgba(255, 255, 255, .55); white-space: nowrap; }
+.bd-live-shelf-strip { position: absolute; left: 12px; top: 28px; }
+.bd-live-shelf-strip--slide { -webkit-transition: -webkit-transform .25s ease; }
+.bd-shelf-tile { position: absolute; top: 0; width: 162px; -webkit-transition: opacity .2s ease; }
+.bd-shelf-frame { width: 162px; height: 91px; border-radius: 8px; overflow: hidden; background: #1c1c1e;
+                  -webkit-transition: -webkit-transform .2s ease; }
+.bd-shelf-img { display: block; width: 162px; height: 91px; }
+.bd-shelf-time { margin-top: 10px; font-size: 13px; line-height: 16px; font-weight: 600; color: rgba(255, 255, 255, .5);
+                 -webkit-transition: -webkit-transform .2s ease; }
+.bd-shelf-title { margin-top: 2px; font-size: 15px; line-height: 19px; font-weight: 600; color: rgba(255, 255, 255, .78);
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-transition: -webkit-transform .2s ease; }
+/* Focused and out of view: the tiles' own modifiers (bd-tile--focused, bd-tile--gone) */
+.bd-tile--focused .bd-shelf-time, .bd-tile--focused .bd-shelf-title { -webkit-transform: translate3d(0, 5px, 0); }
+.bd-tile--focused .bd-shelf-title { color: #fff; }
+
+/* Tv-guide (the second Live screen): the focused programme and the preview
+   above, every channel along time below; the plane moves as one layer */
+.bd-guide { position: absolute; left: 0; top: 64px; width: 1280px; height: 656px; }
+.bd-guide-info { position: absolute; left: 56px; top: 16px; width: 700px; }
+.bd-guide-channel { font-size: 15px; line-height: 18px; font-weight: 600; color: rgba(255, 255, 255, .55); }
+.bd-guide-title { margin-top: 6px; font-size: 30px; line-height: 36px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bd-guide-time { margin-top: 6px; font-size: 17px; line-height: 21px; font-weight: 600; color: rgba(255, 255, 255, .6); }
+.bd-guide-text { margin-top: 10px; max-height: 100px; overflow: hidden; font-size: 17px; line-height: 25px; color: rgba(255, 255, 255, .8);
+                 display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.bd-guide-preview-box { position: absolute; left: 808px; top: 16px; width: 416px; height: 234px; border-radius: 12px; box-shadow: 0 0 0 12px #000; }
+.bd-guide-preview-box .bd-live-preview { width: 416px; height: 234px; }
+.bd-guide-grid { position: absolute; left: 0; top: 270px; width: 1280px; height: 386px; }
+.bd-guide-logo { position: absolute; left: 70px; width: 52px; height: 52px; border-radius: 10px; }
+.bd-guide-window { position: absolute; left: 172px; top: 0; width: 1052px; height: 386px; overflow: hidden; }
+.bd-guide-plane { position: absolute; left: 0; top: 0; height: 386px; -webkit-transition: -webkit-transform .25s ease; }
+.bd-guide-hour { position: absolute; top: 2px; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .5); }
+.bd-guide-now { position: absolute; top: 22px; width: 2px; background: #d6262e; }
+.bd-guide-cell { position: absolute; height: 56px; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; overflow: hidden; white-space: nowrap;
+                 background: rgba(255, 255, 255, .07); }
+.bd-guide-cell--now { background: rgba(255, 255, 255, .13); }
+.bd-guide-cell--focused { z-index: 2; background: rgba(255, 255, 255, .24); box-shadow: 0 0 0 3px rgba(255, 255, 255, .9); }
+.bd-guide-cell-title { font-size: 15px; line-height: 19px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.bd-guide-cell-time { font-size: 12px; line-height: 16px; font-weight: 600; color: rgba(255, 255, 255, .55); overflow: hidden; }
+
+/* ---- live player: transport bar on a bottom gradient */
+#video { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; background: #000; display: none; }
+#player { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; pointer-events: none; }
+.osd { display: none; position: absolute; left: 0; right: 0; bottom: 0; padding: 120px 56px 44px;
+       background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.85)); }
+.osd-head { height: 44px; }
+.osd-logo { float: left; width: 44px; height: 44px; margin-right: 14px; border-radius: 10px; }
+.osd-channel { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, .6); line-height: 44px; }
+.osd-now { font-size: 34px; font-weight: 700; margin-top: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.osd-time-line { display: block; margin-top: 16px; height: 20px; }
+.osd-time { display: inline-block; width: 140px; font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, .7); vertical-align: middle; }
+.osd-bar { position: relative; display: inline-block; width: 1000px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, .25); vertical-align: middle; }
+/* Where a pending jump goes (on-demand) */
+.osd-marker { display: none; position: absolute; top: -5px; width: 15px; height: 15px; margin-left: -7px; border-radius: 8px; background: #fff; }
+/* Scaled from the left (no layout while playing) */
+.osd-fill { display: block; height: 5px; border-radius: 3px; background: #fff; -webkit-transform-origin: 0 0; -webkit-transform: scaleX(0); }
+/* The description: when the user asked for the bar (Up, OK, the blue key) */
+.osd-text { max-width: 980px; max-height: 112px; overflow: hidden; margin-top: 14px; font-size: 19px; line-height: 28px;
+            color: rgba(255, 255, 255, .86); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+.osd-next { font-size: 17px; color: rgba(255, 255, 255, .6); margin-top: 12px; }
+/* The picture quality playing, a quiet outlined tag before the keys */
+.osd-quality { display: inline-block; margin-right: 16px; padding: 0 8px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 5px;
+               font-size: 14px; line-height: 22px; font-weight: 600; color: rgba(255, 255, 255, .8); vertical-align: 1px; }
+.osd-quality:empty { display: none; }
+.osd-message { font-size: 19px; color: #ff6961; margin-top: 8px; }
+
+/* ---- the players' panels: the menu and the end's card, above the info bar on
+   the right. No backdrop blur in Chrome 38: a dark, nearly opaque panel */
+.player-menu, .player-next { display: none; position: absolute; right: 56px; bottom: 214px; border-radius: 26px; background: rgba(30, 30, 32, .94); }
+/* The menu, after tvOS's audio and subtitle menu: groups under small headings,
+   a checkmark at the chosen option, the focused line white */
+.player-menu { width: 470px; padding: 10px 0 12px; }
+.player-menu-heading { padding: 14px 28px 6px; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .45); }
+.player-menu-item { position: relative; margin: 0 12px; height: 46px; line-height: 46px; padding: 0 18px 0 48px; border-radius: 14px;
+                    font-size: 20px; color: rgba(255, 255, 255, .9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                    -webkit-transition: -webkit-transform .15s ease; }
+.player-menu-item--focused { color: #000; background: #fff; -webkit-transform: scale(1.03); }
+.player-menu-item--chosen { font-weight: 600; }
+/* Why an option is missing (live: foreign languages are subtitled in the picture) */
+.player-menu-note { padding: 6px 30px 8px; font-size: 15px; line-height: 20px; color: rgba(255, 255, 255, .45); }
+/* A checkmark drawn with two borders (the font has no ✓) */
+.player-menu-check { display: none; position: absolute; left: 22px; top: 13px; width: 7px; height: 14px;
+                     border-right: 3px solid currentColor; border-bottom: 3px solid currentColor; -webkit-transform: rotate(45deg); }
+.player-menu-item--chosen .player-menu-check { display: block; }
+
+/* The end's card: the next episode while the countdown runs, or a suggestion */
+.player-next { width: 380px; padding: 12px; }
+.player-next-img { display: block; width: 356px; height: 200px; border-radius: 16px; background: #1c1c1e; }
+.player-next-label { margin: 14px 8px 0; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .55); }
+.player-next-title { margin: 4px 8px 6px; font-size: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- DR's subtitles, drawn by the app (on-demand); up above the info bar while it shows */
+.vod-subtitles { position: absolute; left: 120px; right: 120px; bottom: 60px; text-align: center; -webkit-transition: -webkit-transform .2s ease; }
+.vod-subtitles--up { -webkit-transform: translate3d(0, -150px, 0); }
+.subtitle-text { font-size: 34px; line-height: 46px; font-weight: 600; padding: 2px 12px; background: rgba(0, 0, 0, .72); border-radius: 6px;
+                 -webkit-box-decoration-break: clone; }
+
+/* ---- focus and selection look, shared by tabs, buttons, season tabs and
+   text pills (last, so it wins over their base rules) */
+.bd-menu-item--current, .bd-button, .bd-season--selected { color: #fff; background: rgba(255, 255, 255, .16); }
+.bd-menu-item--focused, .bd-button--focused, .bd-season--focused, .bd-tile--focused .bd-tile-text {
+    color: #000; background: #fff; -webkit-transform: scale(1.08); }

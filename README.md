@@ -6,8 +6,6 @@ Bolli DR er ikke en officiel DR-app. Programmer, billeder, navne og logoer er DR
 
 <p align="center"><img src="assets/home.png" alt="Bolli DR's forside" width="800"></p>
 
-Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/bolli-dr/releases).
-
 <p align="center">
   <a href="https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.apk"><img src="assets/android.png" alt="Hent til Android og Google TV (APK)" width="240"></a>
   &nbsp;&nbsp;
@@ -52,3 +50,32 @@ Eller installér IPK-filen direkte:
 ```
 https://github.com/aktiwers/bolli-dr/releases/latest/download/bolli-dr.ipk
 ```
+
+## Byg den selv
+
+Du skal bruge Node.js. Appen er ren ES5 til den gamle Chrome 38 i webOS 3.x.
+
+```
+npm install
+npm run build
+```
+
+Så ligger appen i `apps/bolli-dr`.
+
+- **webOS:** `ares-package apps/bolli-dr` med webOS CLI, og installér IPK-filen med Homebrew Channel eller `ares-install`.
+- **Android:** kopiér appen ind i Android-projektet, og byg den med Gradle:
+
+  ```
+  mkdir -p android/app/src/main/assets
+  cp -r apps/bolli-dr/* android/app/src/main/assets/
+  sed -i 's|<meta charset="utf-8">|&\n<meta name="viewport" content="width=1280, user-scalable=no">|' android/app/src/main/assets/index.html
+  cd android && ./gradlew assembleDebug
+  ```
+
+## Tak
+
+- Skrifttype: Inter (SIL Open Font License). QR-koder: [QR Code Generator](https://github.com/kazuhikoarase/qrcode-generator) af Kazuhiko Arase (MIT).
+
+## Licens
+
+GPL-3.0, se [LICENSE](LICENSE).
