@@ -4,6 +4,8 @@ En hurtig app til DR's live-kanaler og programmer: DR1, DR2, TVA Live, DR Ramasj
 
 Bolli DR er ikke en officiel DR-app. Programmer, billeder, navne og logoer er DR's; du logger ind med din egen DR-konto (dr.dk/aktiver).
 
+<p align="center"><img src="assets/home.png" alt="Bolli DR's forside" width="800"></p>
+
 Her ligger kun de færdige pakker, under [Releases](https://github.com/aktiwers/bolli-dr/releases).
 
 <p align="center">
